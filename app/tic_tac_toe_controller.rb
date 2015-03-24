@@ -52,35 +52,53 @@ class TicTacToeController < UIViewController
     true
   end
 
-  def notify
-    UIAlertController.alert(self, 'This is happening, OK?', buttons: ['Cancel', 'Kill it!', 'Uh, what?']
-      ) do |button|
-      # button is 'Cancel', 'Kill it!' or 'Uh, what?'
+  def alertView(alertView, didDismissWithButtonIndex:idx)
+    reset_board
+  end
+
+  def reset_board
+    @board = " "*9
+    @moves.each { |square| square.backgroundColor = UIColor.blackColor; square.layer.contents = nil }
+    @is_x = true
+  end
+
+  def notify(winner)
+    won_dialog = UIAlertView.alloc.initWithTitle "#{winner} won!",
+                                                 message:"#{winner} has won the game!", delegate:self, cancelButtonTitle:"New Game", otherButtonTitles:nil
+    won_dialog.show
+    # UIAlertController.alert(self, 'This is happening, OK?', buttons: ['Cancel', 'Kill it!', 'Uh, what?']
+    #   ) do |button|
+    #   button is 'Cancel', 'Kill it!' or 'Uh, what?'
+    # end
+  end
+
+  def win_test
+    WIN_STATES.each do |stack|
+      check_value = @board[stack[0]]+@board[stack[1]]+@board[stack[2]]
+      return check_value[0] if check_value == 'xxx' || check_value == 'ooo'
     end
+    nil
   end
 
   def touchesBegan(touches, withEvent:event)
-    NSLog "Got event: %@", event
+    # NSLog "Got event: %@", event
     locationPoint = touches.anyObject.locationInView(self.view)
-    NSLog "Got location: %@", locationPoint
+    # NSLog "Got location: %@", locationPoint
     touched_view = self.view.hitTest(locationPoint, withEvent:event)
     touched = @moves.index(touched_view)
-    if touched
-#    touched_view.backgroundColor = UIColor.blueColor
+    if touched && @board[touched] == ' '
       touched_view.layer.contents = @is_x ? @x_image.CGImage : @o_image.CGImage
       @board[touched] = @is_x ? 'x' : 'o'
+
       # Check to see if anyone won the game.
-      # notify if @board[0..2] == 'xxx'
+      winner = win_test
+      notify(winner.upcase) unless winner.nil?
       @is_x = !@is_x
     end
   end
 
   def motionEnded(motion, withEvent:event)
-    if motion == UIEventSubtypeMotionShake
-      @board = " "*9
-      @moves.each { |square| square.backgroundColor = UIColor.blackColor; square.layer.contents = nil }
-      @is_x = true
-    end
+    reset_board if motion == UIEventSubtypeMotionShake
   end
 
   def shouldAutorotateToInterfaceOrientation

@@ -63,8 +63,8 @@ class TicTacToeController < UIViewController
   end
 
   def notify(winner)
-    won_dialog = UIAlertView.alloc.initWithTitle "#{winner} won!",
-                                                 message:"#{winner} has won the game!", delegate:self, cancelButtonTitle:"New Game", otherButtonTitles:nil
+    won_dialog = UIAlertView.alloc.initWithTitle "#{winner} has won!",
+                                                 message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:nil
     won_dialog.show
     # UIAlertController.alert(self, 'This is happening, OK?', buttons: ['Cancel', 'Kill it!', 'Uh, what?']
     #   ) do |button|

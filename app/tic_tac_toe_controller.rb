@@ -53,7 +53,7 @@ class TicTacToeController < UIViewController
   end
 
   def alertView(alertView, didDismissWithButtonIndex:idx)
-    reset_board
+    reset_board if idx == 0
   end
 
   def reset_board
@@ -64,7 +64,7 @@ class TicTacToeController < UIViewController
 
   def notify(winner)
     won_dialog = UIAlertView.alloc.initWithTitle "#{winner} has won!",
-                                                 message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:nil
+                                                 message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:"Show Board", nil
     won_dialog.show
     # UIAlertController.alert(self, 'This is happening, OK?', buttons: ['Cancel', 'Kill it!', 'Uh, what?']
     #   ) do |button|

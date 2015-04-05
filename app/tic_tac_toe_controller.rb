@@ -29,9 +29,7 @@ class TicTacToeController < UIViewController
         @board_view.addSubview square
       end
     end
-#    @board_view.userInteractionEnabled = false
     view.addSubview @board_view
-#    view.userInteractionEnabled = false
 
     @x_image = UIImage.imageNamed 'x.png'
     @o_image = UIImage.imageNamed 'o.png'
@@ -53,7 +51,7 @@ class TicTacToeController < UIViewController
   end
 
   def alertView(alertView, didDismissWithButtonIndex:idx)
-    reset_board if idx == 0
+    reset_board
   end
 
   def reset_board
@@ -64,12 +62,17 @@ class TicTacToeController < UIViewController
 
   def notify(winner)
     won_dialog = UIAlertView.alloc.initWithTitle "#{winner} has won!",
-                                                 message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:"Show Board", nil
+                                                 message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:nil
     won_dialog.show
     # UIAlertController.alert(self, 'This is happening, OK?', buttons: ['Cancel', 'Kill it!', 'Uh, what?']
     #   ) do |button|
     #   button is 'Cancel', 'Kill it!' or 'Uh, what?'
     # end
+  end
+
+  def notify_draw
+    draw_dialog = UIAlertView.alloc.initWithTitle "It's a draw!", message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:"Show Board", nil
+    draw_dialog.show
   end
 
   def win_test
@@ -81,18 +84,20 @@ class TicTacToeController < UIViewController
   end
 
   def touchesBegan(touches, withEvent:event)
-    # NSLog "Got event: %@", event
     locationPoint = touches.anyObject.locationInView(self.view)
-    # NSLog "Got location: %@", locationPoint
     touched_view = self.view.hitTest(locationPoint, withEvent:event)
     touched = @moves.index(touched_view)
     if touched && @board[touched] == ' '
+      # If someone'd already won, we don't allow more moves.
+      return if win_test
+
       touched_view.layer.contents = @is_x ? @x_image.CGImage : @o_image.CGImage
       @board[touched] = @is_x ? 'x' : 'o'
 
-      # Check to see if anyone won the game.
+      # Check to see if anyone won the game after this move.
       winner = win_test
       notify(winner.upcase) unless winner.nil?
+      notify_draw unless @board.include? ' '
       @is_x = !@is_x
     end
   end

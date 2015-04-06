@@ -51,7 +51,7 @@ class TicTacToeController < UIViewController
   end
 
   def alertView(alertView, didDismissWithButtonIndex:idx)
-    reset_board
+    reset_board if idx == 0
   end
 
   def reset_board
@@ -61,13 +61,8 @@ class TicTacToeController < UIViewController
   end
 
   def notify(winner)
-    won_dialog = UIAlertView.alloc.initWithTitle "#{winner} has won!",
-                                                 message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:nil
+    won_dialog = UIAlertView.alloc.initWithTitle "#{winner} has won!", message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:"Show Board", nil
     won_dialog.show
-    # UIAlertController.alert(self, 'This is happening, OK?', buttons: ['Cancel', 'Kill it!', 'Uh, what?']
-    #   ) do |button|
-    #   button is 'Cancel', 'Kill it!' or 'Uh, what?'
-    # end
   end
 
   def notify_draw
@@ -78,7 +73,7 @@ class TicTacToeController < UIViewController
   def win_test
     WIN_STATES.each do |stack|
       check_value = @board[stack[0]]+@board[stack[1]]+@board[stack[2]]
-      return check_value[0] if check_value == 'xxx' || check_value == 'ooo'
+      return check_value[0].upcase if check_value == 'xxx' || check_value == 'ooo'
     end
     nil
   end
@@ -96,8 +91,11 @@ class TicTacToeController < UIViewController
 
       # Check to see if anyone won the game after this move.
       winner = win_test
-      notify(winner.upcase) unless winner.nil?
-      notify_draw unless @board.include? ' '
+      if winner
+        notify winner
+      else
+        notify_draw unless @board.include? ' '
+      end
       @is_x = !@is_x
     end
   end

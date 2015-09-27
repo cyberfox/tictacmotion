@@ -1,19 +1,8 @@
 class TicTacToeController < UIViewController
-  WIN_STATES = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6]
-  ]
-
   def viewDidLoad
     each_width = (view.frame.size.width-20)/3
 
-    @board = " "*9
+    @board = Board.new
     @board_view = UIView.alloc.initWithFrame([[0, 0], [each_width * 3 + 15, each_width * 3 + 15]])
     @board_view.center = view.center
     @board_view.backgroundColor = UIColor.whiteColor
@@ -33,7 +22,6 @@ class TicTacToeController < UIViewController
 
     @x_image = UIImage.imageNamed 'x.png'
     @o_image = UIImage.imageNamed 'o.png'
-    @is_x = true
     super
   end
 
@@ -55,9 +43,9 @@ class TicTacToeController < UIViewController
   end
 
   def reset_board
-    @board = " "*9
+    @board = Board.new
+
     @moves.each { |square| square.backgroundColor = UIColor.blackColor; square.layer.contents = nil }
-    @is_x = true
   end
 
   def notify(winner)
@@ -70,33 +58,23 @@ class TicTacToeController < UIViewController
     draw_dialog.show
   end
 
-  def win_test
-    WIN_STATES.each do |stack|
-      check_value = @board[stack[0]]+@board[stack[1]]+@board[stack[2]]
-      return check_value[0].upcase if check_value == 'xxx' || check_value == 'ooo'
-    end
-    nil
-  end
-
   def touchesBegan(touches, withEvent:event)
     locationPoint = touches.anyObject.locationInView(self.view)
     touched_view = self.view.hitTest(locationPoint, withEvent:event)
     touched = @moves.index(touched_view)
-    if touched && @board[touched] == ' '
-      # If someone'd already won, we don't allow more moves.
-      return if win_test
 
-      touched_view.layer.contents = @is_x ? @x_image.CGImage : @o_image.CGImage
-      @board[touched] = @is_x ? 'x' : 'o'
-
-      # Check to see if anyone won the game after this move.
-      winner = win_test
-      if winner
-        notify winner
-      else
-        notify_draw unless @board.include? ' '
+    if touched
+      if @board.available?(touched)
+        # If someone'd already won, we don't allow more moves.
+        unless @board.winner? || @board.draw?
+          touched_view.layer.contents = [@x_image.CGImage, @o_image.CGImage][@board.player]
+          @board.move(touched)
+        end
       end
-      @is_x = !@is_x
+
+      winner = @board.winner?
+      notify winner if winner
+      notify_draw if @board.draw? && !winner
     end
   end
 

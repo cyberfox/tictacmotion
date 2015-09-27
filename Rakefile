@@ -11,6 +11,8 @@ end
 Motion::Project::App.setup do |app|
   # Use `rake config' to see complete project settings.
   app.name = 'tictac'
+  app.deployment_target = '6.1'
   app.device_family = [:iphone, :ipad]
-  app.provisioning_profile = "/Users/mrs/Downloads/iOS_Team_Provisioning_Profile_.mobileprovision"
+  app.identifier = 'com.cyberfox.tictac'
+  app.provisioning_profile='TicTac_Profile.mobileprovision'
 end

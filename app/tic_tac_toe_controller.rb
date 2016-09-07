@@ -2,6 +2,12 @@ class TicTacToeController < UIViewController
   def viewDidLoad
     each_width = (view.frame.size.width-20)/3
 
+    button = UIButton.buttonWithType(UIButtonTypeCustom)
+    button.addTarget(self, action: :'new_game:', forControlEvents: UIControlEventTouchUpInside)
+    button.setTitle('New Game', forState: UIControlStateNormal)
+    button.frame = CGRectMake(80.0, 20.0, 160.0, 40.0)
+    view.addSubview(button);
+
     @board = Board.new
     @board_view = UIView.alloc.initWithFrame([[0, 0], [each_width * 3 + 15, each_width * 3 + 15]])
     @board_view.center = view.center
@@ -40,6 +46,10 @@ class TicTacToeController < UIViewController
 
   def alertView(alertView, didDismissWithButtonIndex:idx)
     reset_board if idx == 0
+  end
+
+  def new_game(event)
+    reset_board
   end
 
   def reset_board

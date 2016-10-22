@@ -54,27 +54,25 @@ class TicTacToeController < UIViewController
 
   def reset_board
     @board = Board.new
+    @winLineLayer.removeFromSuperlayer if @winLineLayer
+    @winLineLayer = nil
 
     @moves.each { |square| square.backgroundColor = UIColor.blackColor; square.layer.contents = nil }
   end
 
   def draw_line(squares)
-    each_width = (view.frame.size.width-20)/3
     path = UIBezierPath.bezierPath
-    row = squares.first / 3
-    col = squares.first % 3
 
-    path.moveToPoint [5+row*(each_width+2.5) + (each_width / 2), 124+5+col*(each_width+2.5) + (each_width / 2)]
-    row = squares.last / 3
-    col = squares.last % 3
-    path.addLineToPoint [5+row*(each_width+2.5) + (each_width / 2), 124+5+col*(each_width+2.5) + (each_width / 2)]
+    path.moveToPoint [@moves[squares.first].center.x, @moves[squares.first].center.y]
+    path.addLineToPoint [@moves[squares.last].center.x, @moves[squares.last].center.y]
 
     shapeLayer = CAShapeLayer.layer
     shapeLayer.path = path.CGPath
     shapeLayer.strokeColor = UIColor.blueColor.CGColor
     shapeLayer.lineWidth = 3.0
     shapeLayer.fillColor = UIColor.clearColor.CGColor
-    view.layer.addSublayer(shapeLayer)
+    @winLineLayer = shapeLayer
+    @board_view.layer.addSublayer(@winLineLayer)
   end
 
   def notify(winner)

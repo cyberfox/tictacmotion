@@ -20,7 +20,7 @@ class Board
   def winner?
     WIN_STATES.each do |stack|
       check_value = @board[stack[0]]+@board[stack[1]]+@board[stack[2]]
-      return check_value[0].upcase if check_value == 'xxx' || check_value == 'ooo'
+      return check_value[0].upcase, stack if check_value == 'xxx' || check_value == 'ooo'
     end
     nil
   end

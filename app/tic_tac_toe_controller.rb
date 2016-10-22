@@ -6,7 +6,7 @@ class TicTacToeController < UIViewController
     button.addTarget(self, action: :'new_game:', forControlEvents: UIControlEventTouchUpInside)
     button.setTitle('New Game', forState: UIControlStateNormal)
     button.frame = CGRectMake(80.0, 20.0, 160.0, 40.0)
-    view.addSubview(button);
+    view.addSubview(button)
 
     @board = Board.new
     @board_view = UIView.alloc.initWithFrame([[0, 0], [each_width * 3 + 15, each_width * 3 + 15]])
@@ -58,8 +58,28 @@ class TicTacToeController < UIViewController
     @moves.each { |square| square.backgroundColor = UIColor.blackColor; square.layer.contents = nil }
   end
 
+  def draw_line(squares)
+    each_width = (view.frame.size.width-20)/3
+    path = UIBezierPath.bezierPath
+    row = squares.first / 3
+    col = squares.first % 3
+
+    path.moveToPoint [5+row*(each_width+2.5) + (each_width / 2), 124+5+col*(each_width+2.5) + (each_width / 2)]
+    row = squares.last / 3
+    col = squares.last % 3
+    path.addLineToPoint [5+row*(each_width+2.5) + (each_width / 2), 124+5+col*(each_width+2.5) + (each_width / 2)]
+
+    shapeLayer = CAShapeLayer.layer
+    shapeLayer.path = path.CGPath
+    shapeLayer.strokeColor = UIColor.blueColor.CGColor
+    shapeLayer.lineWidth = 3.0
+    shapeLayer.fillColor = UIColor.clearColor.CGColor
+    view.layer.addSublayer(shapeLayer)
+  end
+
   def notify(winner)
-    won_dialog = UIAlertView.alloc.initWithTitle "#{winner} has won!", message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:"Show Board", nil
+    won_dialog = UIAlertView.alloc.initWithTitle "#{winner.first} has won!", message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:"Show Board", nil
+    draw_line(winner.last)
     won_dialog.show
   end
 

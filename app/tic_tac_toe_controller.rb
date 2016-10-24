@@ -68,6 +68,7 @@ class TicTacToeController < UIViewController
 
     shapeLayer = CAShapeLayer.layer
     shapeLayer.path = path.CGPath
+    shapeLayer.lineCap = KCALineCapRound
     shapeLayer.strokeColor = UIColor.blueColor.CGColor
     shapeLayer.lineWidth = 3.0
     shapeLayer.fillColor = UIColor.clearColor.CGColor

@@ -72,6 +72,7 @@ class TicTacToeController < UIViewController
     shapeLayer.strokeColor = UIColor.blueColor.CGColor
     shapeLayer.lineWidth = 3.0
     shapeLayer.fillColor = UIColor.clearColor.CGColor
+    @winLineLayer.removeFromSuperlayer if @winLineLayer
     @winLineLayer = shapeLayer
     @board_view.layer.addSublayer(@winLineLayer)
   end

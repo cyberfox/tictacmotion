@@ -12,6 +12,6 @@ Motion::Project::App.setup do |app|
   app.name = 'tictac'
   app.device_family = [:iphone, :ipad]
   app.identifier = 'com.cyberfox.tictac'
-  app.provisioning_profile 'tictac'
-  app.target 'tictacwatch', :extension
+  app.provisioning_profile 'TicTac'
+#  app.target 'tictacwatch', :extension
 end

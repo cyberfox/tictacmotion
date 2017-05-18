@@ -100,12 +100,27 @@ class TicTacToeController < UIViewController
           touched_view.layer.contents = [@x_image.CGImage, @o_image.CGImage][@board.player]
           @board.move(touched)
         end
+
+        if single_player && !(@board.winner? || @board.draw?)
+          move = @board.best_move('o')
+          touched_view = @moves[move]
+          touched_view.layer.contents = [@x_image.CGImage, @o_image.CGImage][@board.player]
+          @board.move(move)
+        end
       end
 
-      winner = @board.winner?
-      notify winner if winner
-      notify_draw if @board.draw? && !winner
+      check_winner
     end
+  end
+
+  def single_player
+    true
+  end
+
+  def check_winner
+    winner = @board.winner?
+    notify winner if winner
+    notify_draw if @board.draw? && !winner
   end
 
   def motionEnded(motion, withEvent:event)

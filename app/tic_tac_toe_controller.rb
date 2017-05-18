@@ -8,6 +8,12 @@ class TicTacToeController < UIViewController
     button.frame = CGRectMake(80.0, 20.0, 160.0, 40.0)
     view.addSubview(button)
 
+    segment = UISegmentedControl.alloc.initWithItems(["x", "o", "both"])
+    segment.addTarget(self, action: :'human:', forControlEvents:UIControlEventValueChanged)
+    segment.selectedSegmentIndex = 2
+    segment.frame = CGRectMake(80.0, 475.0, 160.0, 40.0)
+    view.addSubview(segment)
+
     @board = Board.new
     @board_view = UIView.alloc.initWithFrame([[0, 0], [each_width * 3 + 15, each_width * 3 + 15]])
     @board_view.center = view.center
@@ -44,6 +50,15 @@ class TicTacToeController < UIViewController
     true
   end
 
+  def human(sender)
+    @ai_piece = 'o' if sender.selectedSegmentIndex == 0
+    @ai_piece = 'x' if sender.selectedSegmentIndex == 1
+    @ai_piece = nil if sender.selectedSegmentIndex == 2
+
+    make_ai_move if @ai_piece == ['x', 'o'][@board.player]
+    check_winner
+  end
+
   def alertView(alertView, didDismissWithButtonIndex:idx)
     reset_board if idx == 0
   end
@@ -58,6 +73,7 @@ class TicTacToeController < UIViewController
     @winLineLayer = nil
 
     @moves.each { |square| square.backgroundColor = UIColor.blackColor; square.layer.contents = nil }
+    make_ai_move if @ai_piece == 'x'
   end
 
   def draw_line(squares)
@@ -101,20 +117,22 @@ class TicTacToeController < UIViewController
           @board.move(touched)
         end
 
-        if single_player && !(@board.winner? || @board.draw?)
-          move = @board.best_move('o')
-          touched_view = @moves[move]
-          touched_view.layer.contents = [@x_image.CGImage, @o_image.CGImage][@board.player]
-          @board.move(move)
-        end
+        make_ai_move if single_player && !(@board.winner? || @board.draw?)
       end
 
       check_winner
     end
   end
 
+  def make_ai_move
+    move = @board.best_move(@ai_piece)
+    touched_view = @moves[move]
+    touched_view.layer.contents = [@x_image.CGImage, @o_image.CGImage][@board.player]
+    @board.move(move)
+  end
+
   def single_player
-    true
+    !@ai_piece.nil?
   end
 
   def check_winner

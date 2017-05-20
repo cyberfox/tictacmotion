@@ -1,12 +1,20 @@
 class TicTacToeController < UIViewController
   def viewDidLoad
-    each_width = (view.frame.size.width-20)/3
+    each_width = (view.frame.size.width-50)/3
 
     button = UIButton.buttonWithType(UIButtonTypeCustom)
     button.addTarget(self, action: :'new_game:', forControlEvents: UIControlEventTouchUpInside)
     button.setTitle('New Game', forState: UIControlStateNormal)
     button.frame = CGRectMake(80.0, 20.0, 160.0, 40.0)
     view.addSubview(button)
+
+    @board_image = UIImage.imageNamed 'board2.png'
+    imageView = UIImageView.new
+    side = [view.frame.size.width, view.frame.size.height].min
+    imageView.frame = CGRectMake(0, 0, side, side)
+    imageView.center = view.center
+    imageView.image = @board_image
+    view.addSubview(imageView)
 
     segment = UISegmentedControl.alloc.initWithItems(["x", "o", "both"])
     segment.addTarget(self, action: :'human:', forControlEvents:UIControlEventValueChanged)
@@ -17,23 +25,24 @@ class TicTacToeController < UIViewController
     @board = Board.new
     @board_view = UIView.alloc.initWithFrame([[0, 0], [each_width * 3 + 15, each_width * 3 + 15]])
     @board_view.center = view.center
-    @board_view.backgroundColor = UIColor.whiteColor
+    # @board_view.backgroundColor = UIColor.whiteColor
 
     @moves = []
     [0, 1, 2].each do |row|
       [0, 1, 2].each do |column|
         square = UIView.alloc.initWithFrame([[0, 0], [each_width, each_width]])
         square.center = [5 + row * (each_width + 2.5) + (each_width / 2), 5 + column * (each_width + 2.5) + (each_width / 2)]
-        square.backgroundColor = UIColor.blackColor
+        square.backgroundColor = UIColor.clearColor
         square.userInteractionEnabled = true
+        square.layer.contents = @board_image
         @moves << square
         @board_view.addSubview square
       end
     end
     view.addSubview @board_view
 
-    @x_image = UIImage.imageNamed 'x.png'
-    @o_image = UIImage.imageNamed 'o.png'
+    @x_image = UIImage.imageNamed 'x2.png'
+    @o_image = UIImage.imageNamed 'o2.png'
     super
   end
 
@@ -72,7 +81,7 @@ class TicTacToeController < UIViewController
     @winLineLayer.removeFromSuperlayer if @winLineLayer
     @winLineLayer = nil
 
-    @moves.each { |square| square.backgroundColor = UIColor.blackColor; square.layer.contents = nil }
+    @moves.each { |square| square.backgroundColor = UIColor.clearColor; square.layer.contents = nil }
     make_ai_move if @ai_piece == 'x'
   end
 

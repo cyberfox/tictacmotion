@@ -64,8 +64,10 @@ class TicTacToeController < UIViewController
     @ai_piece = 'x' if sender.selectedSegmentIndex == 1
     @ai_piece = nil if sender.selectedSegmentIndex == 2
 
-    make_ai_move if @ai_piece == ['x', 'o'][@board.player]
-    check_winner
+    unless @board.winner? || @board.draw?
+      make_ai_move if @ai_piece == ['x', 'o'][@board.player]
+      check_winner
+    end
   end
 
   def alertView(alertView, didDismissWithButtonIndex:idx)

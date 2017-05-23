@@ -2,6 +2,12 @@ class TicTacToeController < UIViewController
   def viewDidLoad
     each_width = (view.frame.size.width-50)/3
 
+    settings = UIImage.imageNamed "19-gear.png"
+    settingsButton = UIButton.buttonWithType(UIButtonTypeRoundedRect)
+    settingsButton.setImage(settings, forState: UIControlStateNormal)
+    settingsButton.frame = CGRectMake(view.frame.size.width-48.0, 20.0, 52.0, 52.0)
+    view.addSubview(settingsButton)
+
     button = UIButton.buttonWithType(UIButtonTypeCustom)
     button.addTarget(self, action: :'new_game:', forControlEvents: UIControlEventTouchUpInside)
     button.setTitle('New Game', forState: UIControlStateNormal)

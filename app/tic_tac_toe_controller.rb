@@ -4,6 +4,7 @@ class TicTacToeController < UIViewController
 
     settings = UIImage.imageNamed "19-gear.png"
     settingsButton = UIButton.buttonWithType(UIButtonTypeRoundedRect)
+    settingsButton.addTarget(self, action: :'config:', forControlEvents: UIControlEventTouchUpInside)
     settingsButton.setImage(settings, forState: UIControlStateNormal)
     settingsButton.frame = CGRectMake(view.frame.size.width-48.0, 20.0, 52.0, 52.0)
     view.addSubview(settingsButton)
@@ -53,16 +54,21 @@ class TicTacToeController < UIViewController
   end
 
   def viewWillAppear(animated)
+    self.navigationController.setNavigationBarHidden(true, animated:animated)
     becomeFirstResponder
   end
 
   def viewDidDisappear(animated)
-    super
+    self.navigationController.setNavigationBarHidden(false, animated:animated)
     resignFirstResponder
   end
 
   def canBecomeFirstResponder
     true
+  end
+
+  def config(sender)
+    self.navigationController.pushViewController(UIViewController.new, animated:true)
   end
 
   def human(sender)

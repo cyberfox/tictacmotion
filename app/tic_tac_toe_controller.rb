@@ -1,66 +1,74 @@
-class TicTacToeController < UIViewController
+class TicTacToeController < FullScreenUIViewController
   def viewDidLoad
     each_width = (view.frame.size.width-50)/3
-
-    settings = UIImage.imageNamed "19-gear.png"
-    settingsButton = UIButton.buttonWithType(UIButtonTypeRoundedRect)
-    settingsButton.addTarget(self, action: :'config:', forControlEvents: UIControlEventTouchUpInside)
-    settingsButton.setImage(settings, forState: UIControlStateNormal)
-    settingsButton.frame = CGRectMake(view.frame.size.width-48.0, 20.0, 52.0, 52.0)
-    view.addSubview(settingsButton)
-
-    button = UIButton.buttonWithType(UIButtonTypeCustom)
-    button.addTarget(self, action: :'new_game:', forControlEvents: UIControlEventTouchUpInside)
-    button.setTitle('New Game', forState: UIControlStateNormal)
-    button.frame = CGRectMake(80.0, 20.0, 160.0, 40.0)
-    view.addSubview(button)
-
-    @board_image = UIImage.imageNamed 'board2.png'
-    imageView = UIImageView.new
-    side = [view.frame.size.width, view.frame.size.height].min
-    imageView.frame = CGRectMake(0, 0, side, side)
-    imageView.center = view.center
-    imageView.image = @board_image
-    view.addSubview(imageView)
-
-    segment = UISegmentedControl.alloc.initWithItems(["x", "o", "both"])
-    segment.addTarget(self, action: :'human:', forControlEvents:UIControlEventValueChanged)
-    segment.selectedSegmentIndex = 2
-    segment.frame = CGRectMake(80.0, 475.0, 160.0, 40.0)
-    view.addSubview(segment)
-
     @board = Board.new
-    @board_view = UIView.alloc.initWithFrame([[0, 0], [each_width * 3 + 15, each_width * 3 + 15]])
-    @board_view.center = view.center
-    # @board_view.backgroundColor = UIColor.whiteColor
-
     @moves = []
-    [0, 1, 2].each do |row|
-      [0, 1, 2].each do |column|
-        square = UIView.alloc.initWithFrame([[0, 0], [each_width, each_width]])
-        square.center = [5 + row * (each_width + 2.5) + (each_width / 2), 5 + column * (each_width + 2.5) + (each_width / 2)]
-        square.backgroundColor = UIColor.clearColor
-        square.userInteractionEnabled = true
-        square.layer.contents = @board_image
-        @moves << square
-        @board_view.addSubview square
-      end
-    end
-    view.addSubview @board_view
+    squares = squaresView(each_width)
+    @boardLayer = squares.layer
+
+    view.addSubview settingsButton
+    view.addSubview newGameButton
+    view.addSubview boardView
+    view.addSubview humanModeSelectors
+    view.addSubview squares
 
     @x_image = UIImage.imageNamed 'x2.png'
     @o_image = UIImage.imageNamed 'o2.png'
     super
   end
 
-  def viewWillAppear(animated)
-    self.navigationController.setNavigationBarHidden(true, animated:animated)
-    becomeFirstResponder
+  def squaresView(each_width)
+    UIView.alloc.initWithFrame([[0, 0], [each_width * 3 + 15, each_width * 3 + 15]]).tap do |board_view|
+      board_view.center = view.center
+      [0, 1, 2].each do |row|
+        [0, 1, 2].each do |column|
+          nextSquare = square(column, each_width, row)
+          @moves << nextSquare
+          board_view.addSubview nextSquare
+        end
+      end
+    end
   end
 
-  def viewDidDisappear(animated)
-    self.navigationController.setNavigationBarHidden(false, animated:animated)
-    resignFirstResponder
+  def square(column, each_width, row)
+    square = UIView.alloc.initWithFrame([[0, 0], [each_width, each_width]])
+    square.center = [5 + row * (each_width + 2.5) + (each_width / 2), 5 + column * (each_width + 2.5) + (each_width / 2)]
+    square.backgroundColor = UIColor.clearColor
+    square.userInteractionEnabled = true
+    square
+  end
+
+  def humanModeSelectors
+    UISegmentedControl.alloc.initWithItems(["x", "o", "both"]).tap do |segment|
+      segment.addTarget(self, action: :'human:', forControlEvents: UIControlEventValueChanged)
+      segment.selectedSegmentIndex = 2
+      segment.frame = CGRectMake(80.0, 475.0, 160.0, 40.0)
+    end
+  end
+
+  def boardView
+    UIImageView.new.tap do |imageView|
+      side = [view.frame.size.width, view.frame.size.height].min
+      imageView.frame = CGRectMake(0, 0, side, side)
+      imageView.center = view.center
+      imageView.image = UIImage.imageNamed 'board2.png'
+    end
+  end
+
+  def newGameButton
+    UIButton.buttonWithType(UIButtonTypeCustom).tap do |button|
+      button.addTarget(self, action: :'new_game:', forControlEvents: UIControlEventTouchUpInside)
+      button.setTitle('New Game', forState: UIControlStateNormal)
+      button.frame = CGRectMake(80.0, 20.0, 160.0, 40.0)
+    end
+  end
+
+  def settingsButton
+    UIButton.buttonWithType(UIButtonTypeRoundedRect).tap do |settingsButton|
+      settingsButton.addTarget(self, action: :'config:', forControlEvents: UIControlEventTouchUpInside)
+      settingsButton.setImage(UIImage.imageNamed("19-gear.png"), forState: UIControlStateNormal)
+      settingsButton.frame = CGRectMake(view.frame.size.width-48.0, 20.0, 52.0, 52.0)
+    end
   end
 
   def canBecomeFirstResponder
@@ -72,9 +80,7 @@ class TicTacToeController < UIViewController
   end
 
   def human(sender)
-    @ai_piece = 'o' if sender.selectedSegmentIndex == 0
-    @ai_piece = 'x' if sender.selectedSegmentIndex == 1
-    @ai_piece = nil if sender.selectedSegmentIndex == 2
+    @ai_piece = ['o', 'x'][sender.selectedSegmentIndex]
 
     unless @board.winner? || @board.draw?
       make_ai_move if @ai_piece == ['x', 'o'][@board.player]
@@ -99,32 +105,46 @@ class TicTacToeController < UIViewController
     make_ai_move if @ai_piece == 'x'
   end
 
+  def shapeLayer(path)
+    (@shapeLayer ||= CAShapeLayer.layer.tap do |shapeLayer|
+      shapeLayer.lineCap = KCALineCapRound
+      shapeLayer.strokeColor = UIColor.blueColor.CGColor
+      shapeLayer.lineWidth = 3.0
+      shapeLayer.fillColor = UIColor.clearColor.CGColor
+    end).tap do |sl|
+      sl.path = path.CGPath
+    end
+  end
+
   def draw_line(squares)
     path = UIBezierPath.bezierPath
 
     path.moveToPoint [@moves[squares.first].center.x, @moves[squares.first].center.y]
     path.addLineToPoint [@moves[squares.last].center.x, @moves[squares.last].center.y]
 
-    shapeLayer = CAShapeLayer.layer
-    shapeLayer.path = path.CGPath
-    shapeLayer.lineCap = KCALineCapRound
-    shapeLayer.strokeColor = UIColor.blueColor.CGColor
-    shapeLayer.lineWidth = 3.0
-    shapeLayer.fillColor = UIColor.clearColor.CGColor
     @winLineLayer.removeFromSuperlayer if @winLineLayer
-    @winLineLayer = shapeLayer
-    @board_view.layer.addSublayer(@winLineLayer)
+    @winLineLayer = shapeLayer(path)
+    @boardLayer.addSublayer(@winLineLayer)
+  end
+
+  def gameOverAlert(title)
+    alert = UIAlertController.alertControllerWithTitle(title, message: nil, preferredStyle: UIAlertControllerStyleAlert)
+    newGame = UIAlertAction.actionWithTitle('New Game', style: UIAlertActionStyleDefault, handler: method(:new_game))
+    showBoard = UIAlertAction.actionWithTitle('Show Board', style: UIAlertActionStyleDefault, handler: nil)
+
+    alert.addAction(newGame)
+    alert.addAction(showBoard)
+
+    self.presentViewController(alert, animated:true, completion: nil)
   end
 
   def notify(winner)
-    won_dialog = UIAlertView.alloc.initWithTitle "#{winner.first} has won!", message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:"Show Board", nil
     draw_line(winner.last)
-    won_dialog.show
+    gameOverAlert "#{winner.first} has won!"
   end
 
   def notify_draw
-    draw_dialog = UIAlertView.alloc.initWithTitle "It's a draw!", message:nil, delegate:self, cancelButtonTitle:"New Game?", otherButtonTitles:"Show Board", nil
-    draw_dialog.show
+    gameOverAlert "It's a draw!"
   end
 
   def touchesBegan(touches, withEvent:event)

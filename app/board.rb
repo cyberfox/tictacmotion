@@ -12,9 +12,14 @@ class Board
   ]
 
   attr_reader :player
-  def initialize
+  attr_accessor :ai
+
+  def initialize(delegate, ai=nil)
     @board = " "*9
     @player = 0
+    @delegate = delegate
+    @ai = ai
+    ai_move
   end
 
   def winner?
@@ -29,13 +34,12 @@ class Board
     @board[location] == ' '
   end
 
-  def move(location)
-    @board[location] = PLAYERS[@player]
-    @player = 1-@player
-  end
-
   def draw?
     !(@board.include? ' ') && !winner?
+  end
+
+  def done?
+    winner? || !@board.include?(' ')
   end
 
   def best_move(piece)
@@ -58,5 +62,21 @@ class Board
     return corners.sample unless corners.empty?
 
     [1, 3, 4, 5, 7].select {|idx| @board[idx] == ' '}.sample
+  end
+
+  def move(location)
+    if available?(location) && !done?
+      @board[location] = PLAYERS[@player]
+      @delegate.move(location, @player)
+      @player = 1-@player
+      ai_move &:move
+    end
+    winner = winner?
+    @delegate.notify_winner winner if winner
+    @delegate.notify_draw if draw? && !winner
+  end
+
+  def ai_move
+    move (best_move(@ai)) if @ai == ['x', 'o'][player] && !done?
   end
 end

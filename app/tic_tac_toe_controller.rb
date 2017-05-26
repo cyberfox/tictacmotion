@@ -1,7 +1,7 @@
 class TicTacToeController < FullScreenUIViewController
   def viewDidLoad
     each_width = (view.frame.size.width-50)/3
-    @board = Board.new
+    @board = Board.new(self)
     @moves = []
     squares = squaresView(each_width)
     @boardLayer = squares.layer
@@ -12,6 +12,7 @@ class TicTacToeController < FullScreenUIViewController
     view.addSubview humanModeSelectors
     view.addSubview squares
 
+    @alert = makeGameOverAlert
     @x_image = UIImage.imageNamed 'x2.png'
     @o_image = UIImage.imageNamed 'o2.png'
     super
@@ -71,8 +72,14 @@ class TicTacToeController < FullScreenUIViewController
     end
   end
 
-  def canBecomeFirstResponder
-    true
+  def makeGameOverAlert
+    UIAlertController.alertControllerWithTitle(nil, message: nil, preferredStyle: UIAlertControllerStyleAlert).tap do |alert|
+      newGame = UIAlertAction.actionWithTitle('New Game', style: UIAlertActionStyleDefault, handler: method(:new_game))
+      showBoard = UIAlertAction.actionWithTitle('Show Board', style: UIAlertActionStyleDefault, handler: nil)
+
+      alert.addAction(newGame)
+      alert.addAction(showBoard)
+    end
   end
 
   def config(sender)
@@ -80,29 +87,21 @@ class TicTacToeController < FullScreenUIViewController
   end
 
   def human(sender)
-    @ai_piece = ['o', 'x'][sender.selectedSegmentIndex]
-
-    unless @board.winner? || @board.draw?
-      make_ai_move if @ai_piece == ['x', 'o'][@board.player]
-      check_winner
-    end
-  end
-
-  def alertView(alertView, didDismissWithButtonIndex:idx)
-    reset_board if idx == 0
+    @board.ai = ['o', 'x'][sender.selectedSegmentIndex]
+    @board.ai_move
   end
 
   def new_game(event)
-    reset_board
-  end
-
-  def reset_board
-    @board = Board.new
+    @alert.dismissViewControllerAnimated(true, completion: nil)
+    @moves.each { |square| square.backgroundColor = UIColor.clearColor; square.layer.contents = nil }
     @winLineLayer.removeFromSuperlayer if @winLineLayer
     @winLineLayer = nil
 
-    @moves.each { |square| square.backgroundColor = UIColor.clearColor; square.layer.contents = nil }
-    make_ai_move if @ai_piece == 'x'
+    @board = Board.new(self, @board.ai)
+  end
+
+  def show_board(event)
+    @alert.dismissViewControllerAnimated(true, completion: nil)
   end
 
   def shapeLayer(path)
@@ -128,17 +127,11 @@ class TicTacToeController < FullScreenUIViewController
   end
 
   def gameOverAlert(title)
-    alert = UIAlertController.alertControllerWithTitle(title, message: nil, preferredStyle: UIAlertControllerStyleAlert)
-    newGame = UIAlertAction.actionWithTitle('New Game', style: UIAlertActionStyleDefault, handler: method(:new_game))
-    showBoard = UIAlertAction.actionWithTitle('Show Board', style: UIAlertActionStyleDefault, handler: nil)
-
-    alert.addAction(newGame)
-    alert.addAction(showBoard)
-
-    self.presentViewController(alert, animated:true, completion: nil)
+    @alert.title = title
+    self.presentViewController(@alert, animated:true, completion: nil)
   end
 
-  def notify(winner)
+  def notify_winner(winner)
     draw_line(winner.last)
     gameOverAlert "#{winner.first} has won!"
   end
@@ -147,45 +140,25 @@ class TicTacToeController < FullScreenUIViewController
     gameOverAlert "It's a draw!"
   end
 
+  def move(where, who)
+    touched_view = @moves[where]
+    touched_view.layer.contents = [@x_image.CGImage, @o_image.CGImage][who]
+  end
+
   def touchesBegan(touches, withEvent:event)
     locationPoint = touches.anyObject.locationInView(self.view)
     touched_view = self.view.hitTest(locationPoint, withEvent:event)
     touched = @moves.index(touched_view)
 
-    if touched
-      if @board.available?(touched)
-        # If someone'd already won, we don't allow more moves.
-        unless @board.winner? || @board.draw?
-          touched_view.layer.contents = [@x_image.CGImage, @o_image.CGImage][@board.player]
-          @board.move(touched)
-        end
-
-        make_ai_move if single_player && !(@board.winner? || @board.draw?)
-      end
-
-      check_winner
-    end
-  end
-
-  def make_ai_move
-    move = @board.best_move(@ai_piece)
-    touched_view = @moves[move]
-    touched_view.layer.contents = [@x_image.CGImage, @o_image.CGImage][@board.player]
-    @board.move(move)
-  end
-
-  def single_player
-    !@ai_piece.nil?
-  end
-
-  def check_winner
-    winner = @board.winner?
-    notify winner if winner
-    notify_draw if @board.draw? && !winner
+    @board.move touched if touched
   end
 
   def motionEnded(motion, withEvent:event)
-    reset_board if motion == UIEventSubtypeMotionShake
+    new_game(event) if motion == UIEventSubtypeMotionShake
+  end
+
+  def canBecomeFirstResponder
+    true
   end
 
   def shouldAutorotateToInterfaceOrientation

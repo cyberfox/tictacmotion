@@ -30,6 +30,14 @@ class Board
     nil
   end
 
+  def find(piece)
+    [].tap do |ary|
+      @board.each_char.with_index do |ch, idx|
+        ary << idx if ch == piece
+      end
+    end
+  end
+
   def available?(location)
     @board[location] == ' '
   end
@@ -74,6 +82,11 @@ class Board
     winner = winner?
     @delegate.notify_winner winner if winner
     @delegate.notify_draw if draw? && !winner
+  end
+
+  def ai=(piece)
+    @ai = piece
+    ai_move
   end
 
   def ai_move

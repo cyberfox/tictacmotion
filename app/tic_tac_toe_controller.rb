@@ -18,6 +18,18 @@ class TicTacToeController < FullScreenUIViewController
     super
   end
 
+  def x_image=(image)
+    @x_image = image
+    xs = @board.find('x')
+    xs.each {|idx| @moves[idx].layer.contents = image.CGImage}
+  end
+
+  def o_image=(image)
+    @o_image = image
+    os = @board.find('o')
+    os.each {|idx| @moves[idx].layer.contents = image.CGImage}
+  end
+
   def squaresView(each_width)
     UIView.alloc.initWithFrame([[0, 0], [each_width * 3 + 15, each_width * 3 + 15]]).tap do |board_view|
       board_view.center = view.center
@@ -83,12 +95,19 @@ class TicTacToeController < FullScreenUIViewController
   end
 
   def config(sender)
-    self.navigationController.pushViewController(UIViewController.new, animated:true)
+    # self.navigationController.pushViewController(UIViewController.new, animated:true)
+    if @toggle
+      self.x_image = UIImage.imageNamed("x.png")
+      self.o_image = UIImage.imageNamed('o.png')
+    else
+      self.x_image = UIImage.imageNamed("x2.png")
+      self.o_image = UIImage.imageNamed('o2.png')
+    end
+    @toggle = !@toggle
   end
 
   def human(sender)
     @board.ai = ['o', 'x'][sender.selectedSegmentIndex]
-    @board.ai_move
   end
 
   def new_game(event)

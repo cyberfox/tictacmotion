@@ -33,7 +33,10 @@ class Board
   def find(piece)
     [].tap do |ary|
       @board.each_char.with_index do |ch, idx|
-        ary << idx if ch == piece
+        if ch == piece
+          yield idx if block_given?
+          ary << idx
+        end
       end
     end
   end

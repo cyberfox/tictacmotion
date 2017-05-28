@@ -20,14 +20,12 @@ class TicTacToeController < FullScreenUIViewController
 
   def x_image=(image)
     @x_image = image
-    xs = @board.find('x')
-    xs.each {|idx| @moves[idx].layer.contents = image.CGImage}
+    @board.find('x') {|idx| @moves[idx].layer.contents = image.CGImage}
   end
 
   def o_image=(image)
     @o_image = image
-    os = @board.find('o')
-    os.each {|idx| @moves[idx].layer.contents = image.CGImage}
+    @board.find('o') {|idx| @moves[idx].layer.contents = image.CGImage}
   end
 
   def squaresView(each_width)
@@ -94,16 +92,13 @@ class TicTacToeController < FullScreenUIViewController
     end
   end
 
+  TOGGLE = { 'x' => ['x.png', 'x2.png'].map {|x| UIImage.imageNamed x}, 'o' => ['o.png', 'o2.png'].map {|x| UIImage.imageNamed x}}
+
   def config(sender)
     # self.navigationController.pushViewController(UIViewController.new, animated:true)
-    if @toggle
-      self.x_image = UIImage.imageNamed("x.png")
-      self.o_image = UIImage.imageNamed('o.png')
-    else
-      self.x_image = UIImage.imageNamed("x2.png")
-      self.o_image = UIImage.imageNamed('o2.png')
-    end
-    @toggle = !@toggle
+    self.x_image = TOGGLE['x'][@toggle.to_i]
+    self.o_image = TOGGLE['o'][@toggle.to_i]
+    @toggle = (@toggle.to_i + 1) % 2
   end
 
   def human(sender)

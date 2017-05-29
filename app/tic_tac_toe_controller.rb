@@ -95,10 +95,11 @@ class TicTacToeController < FullScreenUIViewController
   TOGGLE = { 'x' => ['x.png', 'x2.png'].map {|x| UIImage.imageNamed x}, 'o' => ['o.png', 'o2.png'].map {|x| UIImage.imageNamed x}}
 
   def config(sender)
-    # self.navigationController.pushViewController(UIViewController.new, animated:true)
-    self.x_image = TOGGLE['x'][@toggle.to_i]
-    self.o_image = TOGGLE['o'][@toggle.to_i]
-    @toggle = (@toggle.to_i + 1) % 2
+    @tableview ||= ImageSelectionController.new
+    self.navigationController.pushViewController(@tableview, animated:true)
+    # self.x_image = TOGGLE['x'][@toggle.to_i]
+    # self.o_image = TOGGLE['o'][@toggle.to_i]
+    # @toggle = (@toggle.to_i + 1) % 2
   end
 
   def human(sender)

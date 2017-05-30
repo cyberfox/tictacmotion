@@ -94,6 +94,7 @@ class TicTacToeController < FullScreenUIViewController
 
   def config(sender)
     @tableview ||= ImageSelectionController.new
+    @tableview.imageHolder = self
     self.navigationController.pushViewController(@tableview, animated:true)
   end
 

@@ -20,4 +20,14 @@ class ImageSelectionController < UITableViewController
   def tableView(tv, titleForHeaderInSection: section)
     "Pick a graphic"
   end
+
+  def tableView(tv, didSelectRowAtIndexPath: path)
+    @holder.x_image=TOGGLE['x'][path.row]
+    @holder.o_image=TOGGLE['o'][path.row]
+    self.navigationController.popViewControllerAnimated(true)
+  end
+
+  def imageHolder=(callback)
+    @holder = callback
+  end
 end

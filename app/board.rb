@@ -80,11 +80,14 @@ class Board
       @board[location] = PLAYERS[@player]
       @delegate.move(location, @player)
       @player = 1-@player
-      ai_move &:move
+      return if ai_move &:move
     end
     winner = winner?
-    @delegate.notify_winner winner if winner
-    @delegate.notify_draw if draw? && !winner
+    if winner
+      @delegate.notify_winner winner
+    elsif draw?
+      @delegate.notify_draw
+    end
   end
 
   def ai=(piece)

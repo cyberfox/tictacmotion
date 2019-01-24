@@ -140,6 +140,7 @@ class TicTacToeController < FullScreenUIViewController
   def gameOverAlert(title)
     @alert.title = title
     self.presentViewController(@alert, animated:true, completion: nil)
+    true
   end
 
   def notify_winner(winner)
